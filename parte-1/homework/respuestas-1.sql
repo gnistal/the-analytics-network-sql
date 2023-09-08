@@ -11,10 +11,13 @@ select product_code from stg.product_master where origin = 'China'
 select product_code from stg.product_master where category = 'Electro' order by name asc
 
 -- 4. Cuales son las TV que se encuentran activas para la venta?
+select * from stg.product_master where subcategory = 'TV' and is_active = true
 
 -- 5. Mostrar todas las tiendas de Argentina ordenadas por fecha de apertura de las mas antigua a la mas nueva.
+select * from stg.store_master where country = 'Argentina' order by start_date ASC
 
 -- 6. Cuales fueron las ultimas 5 ordenes de ventas?
+select order_number  from stg.order_line_sale order by date DESC limit 5
 
 -- 7. Mostrar los primeros 10 registros de el conteo de trafico por Super store ordenados por fecha.
 
