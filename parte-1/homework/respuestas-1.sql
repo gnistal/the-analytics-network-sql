@@ -2,11 +2,13 @@
 
 
 -- 1. Mostrar todos los productos dentro de la categoria electro junto con todos los detalles.
-select * from stg.product_master where categoria = 'Electro'
+select * from stg.product_master where category = 'Electro'
 
 -- 2. Cuales son los producto producidos en China?
+select product_code from stg.product_master where origin = 'China'
 
 -- 3. Mostrar todos los productos de Electro ordenados por nombre.
+select product_code from stg.product_master where category = 'Electro' order by name asc
 
 -- 4. Cuales son las TV que se encuentran activas para la venta?
 
