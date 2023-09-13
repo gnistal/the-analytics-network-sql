@@ -20,16 +20,22 @@ select * from stg.store_master where country = 'Argentina' order by start_date A
 select order_number  from stg.order_line_sale order by date DESC limit 5
 
 -- 7. Mostrar los primeros 10 registros de el conteo de trafico por Super store ordenados por fecha.
+select store_id, date, traffic from stg.super_store_count group by store_id, date, traffic order by date, store_id limit 10
 
 -- 8. Cuales son los producto de electro que no son Soporte de TV ni control remoto.
+select * from stg.product_master where category = 'Electro' AND subsubcategory NOT IN ('Soporte', 'Control remoto')
 
 -- 9. Mostrar todas las lineas de venta donde el monto sea mayor a $100.000 solo para transacciones en pesos.
+select * from stg.order_line_sale WHERE currency = 'ARS' AND sale > 100000
 
 -- 10. Mostrar todas las lineas de ventas de Octubre 2022.
+SELECT * from stg.order_line_sale where  date_part('month', date) = 10
 
 -- 11. Mostrar todos los productos que tengan EAN.
+select * from stg.product_master WHERE ean IS NOT null
 
 -- 12. Mostrar todas las lineas de venta que que hayan sido vendidas entre 1 de Octubre de 2022 y 10 de Noviembre de 2022.
+select * from stg.order_line_sale WHERE date BETWEEN '2022-10-01' AND '2022-11-10'
 
 
 -- ## Semana 1 - Parte B
