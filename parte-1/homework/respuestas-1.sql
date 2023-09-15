@@ -41,33 +41,84 @@ select * from stg.order_line_sale WHERE date BETWEEN '2022-10-01' AND '2022-11-1
 -- ## Semana 1 - Parte B
 
 -- 1. Cuales son los paises donde la empresa tiene tiendas?
+select distinct country from stg.store_master
 
 -- 2. Cuantos productos por subcategoria tiene disponible para la venta?
+select count(distinct product_code), subsubcategory from stg.product_master where is_active = true group by subsubcategory
 
 -- 3. Cuales son las ordenes de venta de Argentina de mayor a $100.000?
+select order_number from stg.order_line_sale ln
+left join stg.store_master sm
+on ln.store = sm.store_id
+where sm.country = 'Argentina'
+and ln.sale > 100000
 
 -- 4. Obtener los decuentos otorgados durante Noviembre de 2022 en cada una de las monedas?
+select date, currency, promotion from stg.order_line_sale WHERE date BETWEEN '2022-11-01' AND '2022-11-30' and promotion  is not null
 
 -- 5. Obtener los impuestos pagados en Europa durante el 2022.
+select tax from stg.order_line_sale where currency = 'EUR' and date_part('year', date) = 2022 and tax is not null
 
 -- 6. En cuantas ordenes se utilizaron creditos?
+select count(order_number) from stg.order_line_sale where credit is not null
 
 -- 7. Cual es el % de descuentos otorgados (sobre las ventas) por tienda?
+select store, sum(sale) * 1.0 / sum(promotion) as porcentaje from stg.order_line_sale group by store order by store 
 
 -- 8. Cual es el inventario promedio por dia que tiene cada tienda?
+with promedio as (
+select store, date, sum(quantity) as qty from stg.order_line_sale group by store, date 
+)
+select store, date, avg(qty) as inventario from promedio group by store, date order by store , date
 
 -- 9. Obtener las ventas netas y el porcentaje de descuento otorgado por producto en Argentina.
+with vtas_netas as (
+select order_number, (sale - coalesce(promotion,0) - coalesce(tax,0)) as netas  from stg.order_line_sale ls
+left join stg.store_master sm
+on ls.store = sm.store_id
+where sm.country = 'Argentina' 
+)
+
+select ols.order_number, vn.netas * 100 / ols.promotion as porcentaje
+from stg.order_line_sale ols
+inner join vtas_netas vn
+on ols.order_number = vn.order_number
 
 -- 10. Las tablas "market_count" y "super_store_count" representan dos sistemas distintos que usa la empresa para contar la cantidad de gente que ingresa a tienda, uno para las tiendas de Latinoamerica y otro para Europa. Obtener en una unica tabla, las entradas a tienda de ambos sistemas.
+select store_id, date(date::TEXT), traffic
+from stg.super_store_count
+union
+select store_id, date(date::TEXT), traffic
+from stg.market_count
 
 -- 11. Cuales son los productos disponibles para la venta (activos) de la marca Phillips?
+select product_code
+from stg.product_master
+where is_active = true
+AND name like '%PHILIPS%'
 
 -- 12. Obtener el monto vendido por tienda y moneda y ordenarlo de mayor a menor por valor nominal de las ventas (sin importar la moneda).
+select store, sum(sale), currency
+from stg.order_line_sale
+group by store, currency
+order by sum(sale) desc
 
 -- 13. Cual es el precio promedio de venta de cada producto en las distintas monedas? Recorda que los valores de venta, impuesto, descuentos y creditos es por el total de la linea.
+with vta_neta as (
+select product, (sale - coalesce(promotion,0) - coalesce(tax,0) - coalesce(credit,0)) as neta
+from stg.order_line_sale
+)
+select ols.product, (neta / quantity) as promedio, currency
+from stg.order_line_sale ols
+inner join vta_neta vn
+on ols.product = vn.product
+group by ols.product, ols.currency, vn.neta, ols.quantity
+order by currency
 
 -- 14. Cual es la tasa de impuestos que se pago por cada orden de venta?
-
+select order_number, coalesce(tax,0) as tasa
+from stg.order_line_sale
+group by order_number, tax
 
 -- ## Semana 2 - Parte A
 
