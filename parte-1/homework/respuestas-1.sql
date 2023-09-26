@@ -123,12 +123,38 @@ group by order_number, tax
 -- ## Semana 2 - Parte A
 
 -- 1. Mostrar nombre y codigo de producto, categoria y color para todos los productos de la marca Philips y Samsung, mostrando la leyenda "Unknown" cuando no hay un color disponible
+select name, product_code, category,
+ CASE WHEN color IS NULL THEN 'Unknown'
+ ELSE color
+ END
+from stg.product_master
+where name like '%PHILIPS%' OR name like '%Samsung%' OR name like '%SAMSUNG%'
 
 -- 2. Calcular las ventas brutas y los impuestos pagados por pais y provincia en la moneda correspondiente.
+select sm.country, sm.province, ols.currency, sum(ols.sale) as vta_bruta, sum(ols.tax) as impuestos
+from stg.order_line_sale ols
+left join stg.store_master sm
+on ols.store = sm.store_id
+group by sm.country, sm.province, ols.currency
+order by sm.country, sm.province
 
 -- 3. Calcular las ventas totales por subcategoria de producto para cada moneda ordenados por subcategoria y moneda.
+select pm.subcategory, ols.currency, sum(ols.sale - ols.promotion - ols.tax - ols.credit) as vta_total
+from stg.order_line_sale ols
+left join stg.product_master pm
+on ols.product = pm.product_code
+group by pm.subcategory, ols.currency
+order by pm.subcategory, ols.currency
   
 -- 4. Calcular las unidades vendidas por subcategoria de producto y la concatenacion de pais, provincia; usar guion como separador y usarla para ordernar el resultado.
+select pm.subcategory, CONCAT(sm.country,'-', sm.province), sum(ols.quantity) as Cantidad
+from stg.order_line_sale ols
+left join stg.product_master pm
+on ols.product = pm.product_code
+left join stg.store_master sm
+on ols.store = sm.store_id
+group by pm.subcategory, sm.country, sm.province
+order by CONCAT(sm.country,'-', sm.province)
   
 -- 5. Mostrar una vista donde sea vea el nombre de tienda y la cantidad de entradas de personas que hubo desde la fecha de apertura para el sistema "super_store".
   
